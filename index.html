@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Nest logo experiment</title>
+	<!-- Nest orange: #ed6c22 -->
+	<style>
+		body {
+			margin: 0;
+			text-align: center;
+
+			font-family: "Helvetica Neue", Helvetica, sans-serif;
+			color: #999;
+		}
+
+		svg {
+			margin: 30px 0 0;
+		}
+
+		.maincirc {
+			stroke: #fff;
+			fill: #fff;
+		}
+
+		.maincirc.maincircvisible {
+			stroke: #999;
+		}
+
+		.twig {
+			fill: #ed6c22;
+		}
+
+		#settings {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			overflow: hidden;
+			padding: 5px 20px;
+			line-height: 1.5em;
+			background-color: #f7f7f7;
+			-moz-user-select     : none;
+			-khtml-user-select   : none;
+			-webkit-user-select  : none;
+			-o-user-select       : none;
+			user-select          : none;
+		}
+
+		#settings .row {
+			clear: left;
+			overflow: hidden;
+			margin-left: 160px;
+			margin-top: 5px;
+		}
+
+		#settings .row:first-child {
+			margin-top: 0;
+		}
+
+		#settings h1, #settings p {
+			float: left;
+			margin: 0 20px 0 0;
+		}
+
+		#settings h1 {
+			position: fixed;
+			top: 5px;
+			left: 20px;
+			font-size: 100%;
+			color: #ed6c22;
+		}
+
+		#settings #new {
+			position: fixed;
+			top: 0;
+			right: 0;
+			margin: 0;
+			padding: 5px 20px;
+			background-color: #f7f7f7;
+		}
+
+		#settings input[type="range"] {
+			width: 80px;
+		}
+
+		#settings .inputhint {
+			display: inline-block;
+			min-width: 30px;
+			text-align: right;
+
+			color: #666;
+		}
+	</style>
+</head>
+<body>
+	<div id="settings">
+		<div class="row">
+			<h1>Nest Logo 2015</h1>
+			<p>
+				<label for="input-twigs">Twigs: </label>
+				<!--<input type="text" id="input-twigs" size="4">-->
+				<span class="inputhint" id="inputhint-twigs"></span>
+				<input type="range" min="5" max="200" id="input-twigs">
+			</p>
+			<p><label for="input-variation">Twig rotation variation (deg):
+				<!--<input type="text" id="input-variation" size="4"></label>-->
+				<span class="inputhint" id="inputhint-variation"></span>
+				<input type="range" min="0" max="180" id="input-variation">
+				<button id="button-rerotate">Re-rotate twigs</button>
+			</p>
+		</div>
+		<div class="row">
+			<p>
+				<label for="input-width">Twig width: </label>
+				<!--<input type="text" id="input-width" size="4">-->
+				<span class="inputhint" id="inputhint-width"></span>
+				<input type="range" min="1" max="20" id="input-width">
+			</p>
+			<p>
+				<label for="input-length">Twig length: </label>
+				<!--<input type="text" id="input-length" size="4">-->
+				<span class="inputhint" id="inputhint-length"></span>
+				<input type="range" min="5" max="250" id="input-length">
+			</p>
+		</div>
+		<p id="new">
+			<button id="button-new">New twigs</button>
+		</p>
+	</div>
+
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script>
+	// NEST LOGO 2015
+	// By Andy.
+
+	// Settings
+	var canvasWidth   = 700,
+		canvasHeight  = 400,
+		circleRadius  = 100,
+		twigLength    = 150,
+		twigWidth     = 10,
+		numTwigs      = 20,
+		twigVariation = 60 // degrees;
+
+	// Constants
+	var pi = Math.PI
+
+	// Functions
+	var rad2deg = function(rad){
+		return rad * 180/pi
+	}
+	var getRandomArbitrary = function(min, max) {
+		return Math.random() * (max - min) + min
+	}
+	var randomPositionOnCircumference = function(){
+		var angle = getRandomArbitrary(0, 2*pi)
+		return [
+			canvasWidth/2 + Math.cos(angle) * circleRadius,
+			canvasHeight/2 + Math.sin(angle) * circleRadius,
+			angle
+		]
+	}
+
+	// The canvas
+	var svg = d3.select("body").append("svg")
+		.attr("width", canvasWidth)
+		.attr("height", canvasHeight)
+
+	// Twig routines
+	var allTwigs = function(){
+		return svg.selectAll(".twig")
+	}
+	var addTwigs = function(){
+		// Set each twig
+		for(var i = 0; i < numTwigs; i++){
+
+			// Get position and random rotation variation
+			var xy = randomPositionOnCircumference(),
+				variation = getRandomArbitrary(-1*twigVariation/2, twigVariation/2)
+
+			svg.append("rect")
+				.attr("class", "twig")
+
+				// Position
+				.attr("x", xy[0] - twigWidth/2)
+				.attr("y", xy[1] - twigLength/2)
+
+				// Size
+				.attr("width", twigWidth)
+				.attr("height", twigLength)
+
+				// Border radius
+				.attr("rx", twigWidth/2)
+				.attr("ry", twigWidth/2)
+
+				// Rotation transformation
+				.attr("transform", 
+					"rotate(" +
+					(rad2deg(xy[2]) + variation)
+					+ " " + xy[0]
+					+ " " + xy[1]
+					+ ")")
+
+				// Storing data for later
+				.attr("data-cx", xy[0])
+				.attr("data-cy", xy[1])
+				.attr("data-angle", xy[2])
+		}
+	}
+	var removeTwigs = function(){
+		allTwigs().remove()
+	}
+	var readdTwigs = function(){
+		removeTwigs()
+		addTwigs()
+	}
+	var setNumTwigs = function(newValue){
+		numTwigs = newValue
+		readdTwigs()
+	}
+	var setTwigLength = function(newValue){
+		twigLength = newValue
+		allTwigs().each(function(){
+			var me = d3.select(this)
+
+			me.attr("height", twigLength)
+				// Position changes based on length
+				.attr("y", me.attr("data-cy") - twigLength/2)
+		})
+	}
+	var setTwigWidth = function(newValue){
+		twigWidth = newValue
+		allTwigs().each(function(){
+			var me = d3.select(this)
+
+			me.attr("width", twigWidth)
+				// Position changes based on width
+				.attr("x", me.attr("data-cx") - twigWidth/2)
+				// Border radius changes based on width
+				.attr("rx", twigWidth/2)
+				.attr("ry", twigWidth/2)
+		})
+	}
+	var rerotateTwigs = function(){
+		allTwigs().each(function(){
+			var me = d3.select(this)
+			var variation = getRandomArbitrary(-1*twigVariation/2, twigVariation/2)
+
+			me.attr("transform",
+			"rotate(" +
+			(rad2deg(me.attr("data-angle")) + variation)
+			+ " " + me.attr("data-cx")
+			+ " " + me.attr("data-cy")
+			+ ")")
+		})
+	}
+	var setTwigRotationVariation = function(newValue){
+		twigVariation = newValue
+		rerotateTwigs()
+	}
+
+	// Input-related stuff
+
+	var setRangeValue = function(name, value){
+		d3.select("#input-" + name).attr("value", value)
+		d3.select("#inputhint-" + name).text(value)
+	}
+	var initialiseRange = function(name, value, setValueFunction){
+		setRangeValue(name, value)
+		d3.select("#input-" + name).on("input", function(){
+			var val = +this.value
+			d3.select("#inputhint-" + name).text(val)
+			setValueFunction(val)
+		})
+	}
+
+	// Hook up buttons
+	d3.select("#button-rerotate").on("click", rerotateTwigs)
+	d3.select("#button-new").on("click", readdTwigs)
+
+	// Hook up inputs
+	initialiseRange("twigs", numTwigs, setNumTwigs)
+	initialiseRange("width", twigWidth, setTwigWidth)
+	initialiseRange("length", twigLength, setTwigLength)
+	initialiseRange("variation", twigVariation, setTwigRotationVariation)
+
+	// Draw the picture!
+	svg.append("circle").attr("r", circleRadius)
+		.attr("cx", canvasWidth/2).attr("cy", canvasHeight/2)
+		.attr("class", "maincirc")
+	addTwigs()
+
+	</script>
+</body>
+</html>
