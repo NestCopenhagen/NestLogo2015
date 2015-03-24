@@ -122,6 +122,11 @@
 				<span class="inputhint" id="inputhint-length"></span>
 				<input type="range" min="5" max="250" id="input-length">
 			</p>
+			<p><label for="input-radiusvar">Radius variation (pix):
+				<!--<input type="text" id="input-radiusvar" size="4"></label>-->
+				<span class="inputhint" id="inputhint-radiusvar"></span>
+				<input type="range" min="0" max="40" id="input-radiusvar">
+			</p>
 		</div>
 		<p id="new">
 			<button id="button-new">New twigs</button>
@@ -136,13 +141,14 @@
 	// By Andy.
 
 	// Settings
-	var canvasWidth   = 700,
-		canvasHeight  = 400,
-		circleRadius  = 100,
-		twigLength    = 150,
-		twigWidth     = 10,
-		numTwigs      = 20,
-		twigVariation = 60 // degrees;
+	var canvasWidth     = 700,
+		canvasHeight    = 400,
+		circleRadius    = 100,
+		twigLength      = 150,
+		twigWidth       = 10,
+		numTwigs        = 20,
+		twigVariation   = 60, // degrees;
+		radiusVariation = 10 // pixels;
 
 	// Constants
 	var pi = Math.PI
@@ -155,10 +161,11 @@
 		return Math.random() * (max - min) + min
 	}
 	var randomPositionOnCircumference = function(){
-		var angle = getRandomArbitrary(0, 2*pi)
+		var angle  = getRandomArbitrary(0, 2*pi)
+		var radius = circleRadius + getRandomArbitrary(-1*radiusVariation/2, radiusVariation/2)
 		return [
-			canvasWidth/2 + Math.cos(angle) * circleRadius,
-			canvasHeight/2 + Math.sin(angle) * circleRadius,
+			canvasWidth/2 + Math.cos(angle) * radius,
+			canvasHeight/2 + Math.sin(angle) * radius,
 			angle
 		]
 	}
@@ -260,6 +267,10 @@
 		twigVariation = newValue
 		rerotateTwigs()
 	}
+	var setRadiusVariation = function(newValue){
+		radiusVariation = newValue
+		readdTwigs()
+	}
 
 	// Input-related stuff
 
@@ -285,6 +296,7 @@
 	initialiseRange("width", twigWidth, setTwigWidth)
 	initialiseRange("length", twigLength, setTwigLength)
 	initialiseRange("variation", twigVariation, setTwigRotationVariation)
+	initialiseRange("radiusvar", radiusVariation, setRadiusVariation)
 
 	// Draw the picture!
 	svg.append("circle").attr("r", circleRadius)
